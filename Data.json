@@ -1,0 +1,37 @@
+{
+  "teams": [
+    "Team A",
+    "Team B",
+    "Team C",
+    "Team D",
+    "Team E",
+    "Team F",
+    "Team G",
+    "Team H",
+    "Team I",
+    "Team J"
+  ],
+  "matches": [
+    {
+      "matchday": 1,
+      "teamA": "Team A",
+      "teamB": "Team B",
+      "scoreA": 2,
+      "scoreB": 1
+    },
+    {
+      "matchday": 1,
+      "teamA": "Team C",
+      "teamB": "Team D",
+      "scoreA": 0,
+      "scoreB": 2
+    },
+    {
+      "matchday": 2,
+      "teamA": "Team A",
+      "teamB": "Team C",
+      "scoreA": 2,
+      "scoreB": 0
+    }
+  ]
+}
