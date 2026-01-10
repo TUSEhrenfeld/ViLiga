@@ -86,8 +86,28 @@ p {
   font-size: 1.1rem;
 }
 
-/* Gewinnerteam */
 .winner {
   color: green;
   font-weight: bold;
+}
+
+/* =========================
+   Mobile
+========================= */
+@media (max-width: 600px) {
+  table {
+    font-size: 14px;
+  }
+
+  th, td {
+    padding: 6px;
+  }
+
+  .matchday h2 {
+    font-size: 1.3rem;
+  }
+
+  .match-result {
+    font-size: 1rem;
+  }
 }
