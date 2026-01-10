@@ -22,7 +22,9 @@ function buildTable(data) {
     stats[team] = {
       games: 0,
       points: 0,
-      setsWon: 0
+      setsFor: 0,
+      setsAgainst: 0,
+      setDiff: 0
     };
   });
 
@@ -32,18 +34,37 @@ function buildTable(data) {
     stats[m.teamA].games++;
     stats[m.teamB].games++;
 
-    stats[m.teamA].setsWon += m.scoreA;
-    stats[m.teamB].setsWon += m.scoreB;
+    stats[m.teamA].setsFor += m.scoreA;
+    stats[m.teamA].setsAgainst += m.scoreB;
 
-    if (m.scoreA > m.scoreB) stats[m.teamA].points += 2;
-    else stats[m.teamB].points += 2;
+    stats[m.teamB].setsFor += m.scoreB;
+    stats[m.teamB].setsAgainst += m.scoreA;
+
+    // Punktevergabe (Volleyball-Regel)
+    if (m.scoreA === 3 && m.scoreB === 2) {
+      stats[m.teamA].points += 2;
+      stats[m.teamB].points += 1;
+    } else if (m.scoreB === 3 && m.scoreA === 2) {
+      stats[m.teamB].points += 2;
+      stats[m.teamA].points += 1;
+    } else if (m.scoreA > m.scoreB) {
+      stats[m.teamA].points += 2;
+    } else {
+      stats[m.teamB].points += 2;
+    }
   });
 
-  const sorted = Object.entries(stats)
-    .sort((a, b) => {
-      if (b[1].points !== a[1].points) return b[1].points - a[1].points;
-      return b[1].setsWon - a[1].setsWon;
-    });
+  // Satzdifferenz berechnen
+  Object.values(stats).forEach(s => {
+    s.setDiff = s.setsFor - s.setsAgainst;
+  });
+
+  // Sortierung: Punkte → Satzdifferenz → gewonnene Sätze
+  const sorted = Object.entries(stats).sort((a, b) => {
+    if (b[1].points !== a[1].points) return b[1].points - a[1].points;
+    if (b[1].setDiff !== a[1].setDiff) return b[1].setDiff - a[1].setDiff;
+    return b[1].setsFor - a[1].setsFor;
+  });
 
   const tbody = document.querySelector('#table tbody');
   tbody.innerHTML = '';
@@ -55,7 +76,7 @@ function buildTable(data) {
         <td>${team}</td>
         <td>${s.games}</td>
         <td>${s.points}</td>
-        <td>${s.setsWon}</td>
+        <td>${s.setDiff}</td>
       </tr>`;
   });
 }
