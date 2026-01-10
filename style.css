@@ -57,7 +57,44 @@ p {
   margin: 6px 0;
 }
 
-/* Mobile */
+/* =========================
+   Spieltage
+========================= */
+#matchdays {
+  text-align: center;
+  margin-top: 2rem;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  font-family: Arial, sans-serif;
+}
+
+.matchday {
+  margin-bottom: 2rem;
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.matchday h2 {
+  margin-bottom: 0.5rem;
+  font-size: 1.5rem;
+  color: var(--primary);
+}
+
+.match-result {
+  margin: 0.25rem 0;
+  font-size: 1.1rem;
+}
+
+/* Gewinnerteam */
+.winner {
+  color: green;
+  font-weight: bold;
+}
+
+/* =========================
+   Mobile
+========================= */
 @media (max-width: 600px) {
   table {
     font-size: 14px;
@@ -65,5 +102,13 @@ p {
 
   th, td {
     padding: 6px;
+  }
+
+  .matchday h2 {
+    font-size: 1.3rem;
+  }
+
+  .match-result {
+    font-size: 1rem;
   }
 }
