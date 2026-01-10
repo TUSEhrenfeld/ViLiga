@@ -88,11 +88,41 @@ function buildMatchdays(data) {
   const container = document.getElementById('matchdays');
   container.innerHTML = '';
 
+  // Gruppieren nach Spieltag
+  const matchdays = {};
   data.matches.forEach(m => {
-    container.innerHTML += `
-      <p>
-        Spieltag ${m.matchday}:
-        <strong>${m.teamA}</strong> ${m.scoreA ?? '-'} : ${m.scoreB ?? '-'} <strong>${m.teamB}</strong>
-      </p>`;
+    if (!matchdays[m.matchday]) matchdays[m.matchday] = [];
+    matchdays[m.matchday].push(m);
   });
+
+  // HTML pro Spieltag erstellen
+  Object.keys(matchdays).forEach(day => {
+    const dayDiv = document.createElement('div');
+    dayDiv.classList.add('matchday');
+
+    // Überschrift Spieltag
+    const header = document.createElement('h2');
+    header.textContent = `Spieltag ${day}`;
+    dayDiv.appendChild(header);
+
+    // Ergebnisse
+    matchdays[day].forEach(m => {
+      const p = document.createElement('p');
+      p.classList.add('match-result');
+
+      // Gewinnerteam markieren
+      let teamAClass = '';
+      let teamBClass = '';
+      if (m.scoreA !== null && m.scoreB !== null) {
+        if (m.scoreA > m.scoreB) teamAClass = 'winner';
+        else if (m.scoreB > m.scoreA) teamBClass = 'winner';
+      }
+
+      p.innerHTML = `<strong class="${teamAClass}">${m.teamA}</strong> ${m.scoreA ?? '-'} : ${m.scoreB ?? '-'} <strong class="${teamBClass}">${m.teamB}</strong>`;
+      dayDiv.appendChild(p);
+    });
+
+    container.appendChild(dayDiv);
+  });
+}
 }
