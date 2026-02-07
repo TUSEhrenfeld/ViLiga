@@ -11,22 +11,22 @@
   "matches": [
     {
       "matchday": 1,
-      "teamA": "Team A",
-      "teamB": "Team B",
+      "teamA": "Spätis",
+      "teamB": "Earlies",
       "scoreA": 2,
       "scoreB": 1
     },
     {
       "matchday": 1,
-      "teamA": "Team C",
-      "teamB": "Team D",
+      "teamA": "Mixed 2",
+      "teamB": "Damen 2",
       "scoreA": 0,
       "scoreB": 2
     },
     {
       "matchday": 2,
-      "teamA": "Team A",
-      "teamB": "Team C",
+      "teamA": "Team Mojo",
+      "teamB": "Mixed 2",
       "scoreA": 2,
       "scoreB": 0
     }
