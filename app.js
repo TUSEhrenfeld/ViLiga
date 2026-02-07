@@ -1,21 +1,23 @@
 document.addEventListener("DOMContentLoaded", () => {
-  let leagueData;
+  const showError = (msg) => {
+    console.error(msg);
+    const el = document.getElementById("matchdays");
+    if (el) el.innerHTML = `<p style="color:red;font-weight:700;">${msg}</p>`;
+  };
 
   fetch('data.json')
-    .then(res => res.json())
+    .then(res => {
+      if (!res.ok) throw new Error(`Konnte data.json nicht laden (HTTP ${res.status}). Dateiname/Pfad prüfen!`);
+      return res.json();
+    })
     .then(data => {
-      leagueData = data;
-      updateView();
+      buildTable(data);
+      buildMatchdays(data);
+    })
+    .catch(err => {
+      showError(err.message);
     });
 
-  function updateView() {
-    buildTable(leagueData);
-    buildMatchdays(leagueData);
-  }
-
-  /* =========================
-     TABELLE
-  ========================= */
   function buildTable(data) {
     const stats = {};
 
@@ -32,6 +34,10 @@ document.addEventListener("DOMContentLoaded", () => {
     data.matches.forEach(m => {
       if (m.scoreA === null || m.scoreB === null) return;
 
+      // Schutz: unbekannte Teams finden
+      if (!stats[m.teamA]) throw new Error(`Unbekanntes Team in matches: "${m.teamA}" (steht nicht in teams[])`);
+      if (!stats[m.teamB]) throw new Error(`Unbekanntes Team in matches: "${m.teamB}" (steht nicht in teams[])`);
+
       stats[m.teamA].games++;
       stats[m.teamB].games++;
 
@@ -41,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
       stats[m.teamB].setsFor += m.scoreB;
       stats[m.teamB].setsAgainst += m.scoreA;
 
-      // Punktevergabe (Volleyball-Regel)
+      // Punktevergabe (3:2 => 2:1, sonst 2:0)
       if (m.scoreA === 3 && m.scoreB === 2) {
         stats[m.teamA].points += 2;
         stats[m.teamB].points += 1;
@@ -55,12 +61,10 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    // Satzdifferenz berechnen
     Object.values(stats).forEach(s => {
       s.setDiff = s.setsFor - s.setsAgainst;
     });
 
-    // Sortierung: Punkte → Satzdifferenz → gewonnene Sätze
     const sorted = Object.entries(stats).sort((a, b) => {
       if (b[1].points !== a[1].points) return b[1].points - a[1].points;
       if (b[1].setDiff !== a[1].setDiff) return b[1].setDiff - a[1].setDiff;
@@ -68,8 +72,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     const tbody = document.querySelector('#table tbody');
-    tbody.innerHTML = '';
+    if (!tbody) throw new Error('Tabelle nicht gefunden: Es fehlt <table id="table"><tbody>...</tbody></table> in index.html');
 
+    tbody.innerHTML = '';
     sorted.forEach(([team, s], i) => {
       tbody.innerHTML += `
         <tr>
@@ -82,36 +87,30 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  /* =========================
-     SPIELTAGE
-  ========================= */
   function buildMatchdays(data) {
     const container = document.getElementById('matchdays');
+    if (!container) throw new Error('Element #matchdays fehlt in index.html');
+
     container.innerHTML = '';
 
-    // Gruppieren nach Spieltag
     const matchdays = {};
     data.matches.forEach(m => {
       if (!matchdays[m.matchday]) matchdays[m.matchday] = [];
       matchdays[m.matchday].push(m);
     });
 
-    // HTML pro Spieltag erstellen
     Object.keys(matchdays).forEach(day => {
       const dayDiv = document.createElement('div');
       dayDiv.classList.add('matchday');
 
-      // Überschrift Spieltag
       const header = document.createElement('h2');
       header.textContent = `Spieltag ${day}`;
       dayDiv.appendChild(header);
 
-      // Ergebnisse
       matchdays[day].forEach(m => {
         const p = document.createElement('p');
         p.classList.add('match-result');
 
-        // Gewinnerteam markieren
         let teamAClass = '';
         let teamBClass = '';
         if (m.scoreA !== null && m.scoreB !== null) {
@@ -126,5 +125,4 @@ document.addEventListener("DOMContentLoaded", () => {
       container.appendChild(dayDiv);
     });
   }
-
 });
