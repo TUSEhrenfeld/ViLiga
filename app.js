@@ -5,38 +5,51 @@ document.addEventListener("DOMContentLoaded", () => {
     if (el) el.innerHTML = `<p style="color:red;font-weight:700;">${msg}</p>`;
   };
 
-  fetch('data.json')
-    .then(res => {
-      if (!res.ok) throw new Error(`Konnte data.json nicht laden (HTTP ${res.status}). Dateiname/Pfad prüfen!`);
+  fetch("data.json")
+    .then((res) => {
+      if (!res.ok) {
+        throw new Error(
+          `Konnte data.json nicht laden (HTTP ${res.status}). Dateiname/Pfad prüfen!`
+        );
+      }
       return res.json();
     })
-    .then(data => {
+    .then((data) => {
       buildTable(data);
       buildMatchdays(data);
     })
-    .catch(err => {
+    .catch((err) => {
       showError(err.message);
     });
 
+  /* =========================
+     TABELLE
+  ========================= */
   function buildTable(data) {
     const stats = {};
 
-    data.teams.forEach(team => {
+    data.teams.forEach((team) => {
       stats[team] = {
         games: 0,
         points: 0,
         setsFor: 0,
         setsAgainst: 0,
-        setDiff: 0
+        setDiff: 0,
       };
     });
 
-    data.matches.forEach(m => {
+    data.matches.forEach((m) => {
       if (m.scoreA === null || m.scoreB === null) return;
 
       // Schutz: unbekannte Teams finden
-      if (!stats[m.teamA]) throw new Error(`Unbekanntes Team in matches: "${m.teamA}" (steht nicht in teams[])`);
-      if (!stats[m.teamB]) throw new Error(`Unbekanntes Team in matches: "${m.teamB}" (steht nicht in teams[])`);
+      if (!stats[m.teamA])
+        throw new Error(
+          `Unbekanntes Team in matches: "${m.teamA}" (steht nicht in teams[])`
+        );
+      if (!stats[m.teamB])
+        throw new Error(
+          `Unbekanntes Team in matches: "${m.teamB}" (steht nicht in teams[])`
+        );
 
       stats[m.teamA].games++;
       stats[m.teamB].games++;
@@ -47,34 +60,48 @@ document.addEventListener("DOMContentLoaded", () => {
       stats[m.teamB].setsFor += m.scoreB;
       stats[m.teamB].setsAgainst += m.scoreA;
 
-      // Punktevergabe (3:2 => 2:1, sonst 2:0)
+      // Punktevergabe (Volleyball-Regel):
+      // 3:2 => Sieger 2, Verlierer 1
+      // 3:0 oder 3:1 => Sieger 3, Verlierer 0
       if (m.scoreA === 3 && m.scoreB === 2) {
         stats[m.teamA].points += 2;
         stats[m.teamB].points += 1;
       } else if (m.scoreB === 3 && m.scoreA === 2) {
         stats[m.teamB].points += 2;
         stats[m.teamA].points += 1;
-      } else if (m.scoreA > m.scoreB) {
-        stats[m.teamA].points += 2;
+      } else if (m.scoreA === 3 && (m.scoreB === 0 || m.scoreB === 1)) {
+        stats[m.teamA].points += 3;
+      } else if (m.scoreB === 3 && (m.scoreA === 0 || m.scoreA === 1)) {
+        stats[m.teamB].points += 3;
       } else {
-        stats[m.teamB].points += 2;
+        console.warn(
+          "Ungültiges Satz-Ergebnis:",
+          m.teamA,
+          `${m.scoreA}:${m.scoreB}`,
+          m.teamB
+        );
       }
     });
 
-    Object.values(stats).forEach(s => {
+    // Satzdifferenz berechnen
+    Object.values(stats).forEach((s) => {
       s.setDiff = s.setsFor - s.setsAgainst;
     });
 
+    // Sortierung: Punkte → Satzdifferenz → gewonnene Sätze
     const sorted = Object.entries(stats).sort((a, b) => {
       if (b[1].points !== a[1].points) return b[1].points - a[1].points;
       if (b[1].setDiff !== a[1].setDiff) return b[1].setDiff - a[1].setDiff;
       return b[1].setsFor - a[1].setsFor;
     });
 
-    const tbody = document.querySelector('#table tbody');
-    if (!tbody) throw new Error('Tabelle nicht gefunden: Es fehlt <table id="table"><tbody>...</tbody></table> in index.html');
+    const tbody = document.querySelector("#table tbody");
+    if (!tbody)
+      throw new Error(
+        "Tabelle nicht gefunden: Es fehlt <table id=\"table\"><tbody>...</tbody></table> in index.html"
+      );
 
-    tbody.innerHTML = '';
+    tbody.innerHTML = "";
     sorted.forEach(([team, s], i) => {
       tbody.innerHTML += `
         <tr>
@@ -87,38 +114,41 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  /* =========================
+     SPIELTAGE
+  ========================= */
   function buildMatchdays(data) {
-    const container = document.getElementById('matchdays');
-    if (!container) throw new Error('Element #matchdays fehlt in index.html');
+    const container = document.getElementById("matchdays");
+    if (!container) throw new Error("Element #matchdays fehlt in index.html");
 
-    container.innerHTML = '';
+    container.innerHTML = "";
 
     const matchdays = {};
-    data.matches.forEach(m => {
+    data.matches.forEach((m) => {
       if (!matchdays[m.matchday]) matchdays[m.matchday] = [];
       matchdays[m.matchday].push(m);
     });
 
-    Object.keys(matchdays).forEach(day => {
-      const dayDiv = document.createElement('div');
-      dayDiv.classList.add('matchday');
+    Object.keys(matchdays).forEach((day) => {
+      const dayDiv = document.createElement("div");
+      dayDiv.classList.add("matchday");
 
-      const header = document.createElement('h2');
+      const header = document.createElement("h2");
       header.textContent = `Spieltag ${day}`;
       dayDiv.appendChild(header);
 
-      matchdays[day].forEach(m => {
-        const p = document.createElement('p');
-        p.classList.add('match-result');
+      matchdays[day].forEach((m) => {
+        const p = document.createElement("p");
+        p.classList.add("match-result");
 
-        let teamAClass = '';
-        let teamBClass = '';
+        let teamAClass = "";
+        let teamBClass = "";
         if (m.scoreA !== null && m.scoreB !== null) {
-          if (m.scoreA > m.scoreB) teamAClass = 'winner';
-          else if (m.scoreB > m.scoreA) teamBClass = 'winner';
+          if (m.scoreA > m.scoreB) teamAClass = "winner";
+          else if (m.scoreB > m.scoreA) teamBClass = "winner";
         }
 
-        p.innerHTML = `<strong class="${teamAClass}">${m.teamA}</strong> ${m.scoreA ?? '-'} : ${m.scoreB ?? '-'} <strong class="${teamBClass}">${m.teamB}</strong>`;
+        p.innerHTML = `<strong class="${teamAClass}">${m.teamA}</strong> ${m.scoreA ?? "-"} : ${m.scoreB ?? "-"} <strong class="${teamBClass}">${m.teamB}</strong>`;
         dayDiv.appendChild(p);
       });
 
