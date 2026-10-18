@@ -38,7 +38,7 @@
 
     { "matchday": 6, "teamA": "Spätis", "teamB": "Damen 1", "scoreA": null, "scoreB": null },
     { "matchday": 6, "teamA": "Damen 2", "teamB": "Mixed 3", "scoreA": null, "scoreB": null },
-    { "matchday": 6, "teamA": "Team Mojo", "teamB": "Mixed 2", "scoreA": null, "scoreB": null },
+    { "matchday": 6, "teamA": "Team Mojo", "teamB": "Mixed 2", "scoreA": 0, "scoreB": 3 },
     { "matchday": 6, "teamA": "Block and Roll", "teamB": "Earlies", "scoreA": null, "scoreB": null },
 
     { "matchday": 7, "teamA": "Spätis", "teamB": "Mixed 3", "scoreA": null, "scoreB": null },
